@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Health Psychology MCQ Quiz — Upgraded</title>
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jsPDF + html2canvas for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+      :root { --card-bg: #ffffff; }
+      [data-bs-theme="dark"] {
+        --card-bg: #1f2937;
+      }
+      body { background: #f8f9fa; }
+      .card { background: var(--card-bg); }
+      .correct { border-left: 4px solid #198754 !important; }
+      .incorrect { border-left: 4px solid #dc3545 !important; }
+      .flagged { box-shadow: inset 0 0 0 3px rgba(255,193,7,0.12); }
+      .option-label { cursor: pointer; }
+      .question-dot { width:14px; height:14px; border-radius:50%; display:inline-block; margin:2px; }
+      .dot-unanswered { background:#e9ecef; }
+      .dot-answered { background:#198754; }
+      .dot-wrong { background:#dc3545; }
+      .dot-flagged { background:#ffc107; }
+      .controls-row { gap:8px; }
+      /* Responsive smaller controls */
+      @media (max-width:576px){ .controls-row { flex-direction:column; } }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid py-4">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-11 col-lg-10">
+
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+              <h4 class="mb-3">Health Psychology — MCQ Quiz (Upgraded)</h4>
+              <div class="row g-3 align-items-center">
+                <div class="col-12 col-md-8">
+                  <small class="text-muted">Choose question groups to include in the quiz, enable timer if needed, then click <strong>Start Quiz</strong>.</small>
+                </div>
+                <div class="col-12 col-md-4 text-md-end">
+                  <div class="form-check form-switch d-inline-block me-2">
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    <label class="form-check-label small" for="darkModeToggle">Dark Mode</label>
+                  </div>
+                  <button id="exportPdfBtn" class="btn btn-outline-primary btn-sm">Export Results (PDF)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Setup panel -->
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12 col-lg-6">
+                  <h6>1) Select Groups</h6>
+                  <div id="groupList" class="mb-2"></div>
+                  <div class="form-check">
+                    <input type="checkbox" id="selectAllGroups" class="form-check-input">
+                    <label class="form-check-label" for="selectAllGroups">Select All Groups</label>
+                  </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                  <h6>2) Timer (optional)</h6>
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableTimer">
+                    <label class="form-check-label" for="enableTimer">Enable Timer</label>
+                  </div>
+                  <div class="d-flex gap-2 align-items-center">
+                    <select id="timerSelect" class="form-select w-50" disabled>
+                      <option value="300">5 minutes</option>
+                      <option value="600">10 minutes</option>
+                      <option value="1200">20 minutes</option>
+                      <option value="1800">30 minutes</option>
+                      <option value="0">Custom (enter seconds)</option>
+                    </select>
+                    <input id="timerCustom" class="form-control w-50" type="number" min="10" placeholder="seconds" disabled>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <button id="startBtn" class="btn btn-success">Start Quiz</button>
+                <button id="loadAllBtn" class="btn btn-outline-secondary">Load All Groups</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quiz area -->
+          <div id="quizArea" style="display:none;">
+            <div class="card mb-2">
+              <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                  <div class="d-flex align-items-center controls-row">
+                    <button id="shuffleBtn" class="btn btn-primary">Shuffle Questions</button>
+                    <button id="showAnswersBtn" class="btn btn-outline-info">Show Answers</button>
+                    <button id="resetBtn" class="btn btn-outline-secondary">Reset</button>
+                    <button id="flagJumpBtn" class="btn btn-outline-warning">Jump to Flagged</button>
+                  </div>
+                </div>
+
+                <div class="text-center">
+                  <div id="progressSummary" class="small text-muted">Progress: 0 / 0 answered • Flagged: 0</div>
+                  <div id="dotGrid" class="mt-2"></div>
+                </div>
+
+                <div class="text-end">
+                  <div id="timerWrapper" style="display:none;">
+                    <div class="small text-muted mb-1">Time left:</div>
+                    <div class="progress" style="height:10px; width:240px;">
+                      <div id="timerBar" class="progress-bar" role="progressbar" style="width:100%"></div>
+                    </div>
+                    <div id="timeText" class="small mt-1 text-end text-muted">00:00</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form id="quizForm" class="mb-3">
+              <div id="questionsContainer" class="g-3"></div>
+            </form>
+
+            <nav class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <button id="prevPage" class="btn btn-outline-primary">Previous</button>
+                <button id="nextPage" class="btn btn-primary">Next</button>
+              </div>
+
+              <div class="text-center">
+                <span class="small text-muted">Page </span><span id="currentPage">1</span>
+                <span class="small text-muted"> of </span><span id="totalPages">1</span>
+              </div>
+
+              <div>
+                <button id="checkBtn" class="btn btn-success">Check Score</button>
+              </div>
+            </nav>
+
+            <div id="result" class="mt-2" style="display:none;"></div>
+          </div>
+
+          <footer class="text-center text-muted small mt-3">Made for practice — responsive layout with Bootstrap 5.3</footer>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/healthPsyQuiz4.js"></script>
+
+  </body>
+</html>
