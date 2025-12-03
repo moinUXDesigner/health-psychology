@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4-Week Gut Recovery — Weekly Plan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root{
+      --brand-1:#064663; /* deep teal */
+      --accent:#ff7a59; /* warm coral */
+      --muted:#f6f9fb;
+    }
+    body{background: linear-gradient(180deg,var(--muted),#ffffff);color:#073642}
+    .header{background:linear-gradient(90deg,var(--brand-1),#0b7285);color:white}
+    .card-compact{border-radius:14px;box-shadow:0 6px 18px rgba(6,70,99,0.12)}
+    .badge-accent{background:var(--accent);color:white}
+    table thead{background:rgba(6,70,99,0.06)}
+    .small-muted{color:#586e75}
+    .day-card{border-left:6px solid var(--accent)}
+    @media (max-width:767px){
+      .table-responsive{display:none}
+      .card-day{margin-bottom:1rem}
+    }
+    @media (min-width:768px){
+      .card-day{display:none}
+    }
+  </style>
+</head>
+<body>
+  <header class="py-3 header">
+    <div class="container d-flex align-items-center justify-content-between">
+      <div>
+        <h3 class="mb-0">Gut Recovery — 4-Week Plan</h3>
+        <div class="small">Personalized, cardiac-safe • vasculitis-safe • constipation-focused</div>
+      </div>
+      <div class="text-end">
+        <button id="shuffleBtn" class="btn btn-light btn-sm me-2">Shuffle Recipes</button>
+        <button id="resetBtn" class="btn btn-outline-light btn-sm">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container my-4">
+    <section class="mb-4">
+      <div class="card card-compact p-3">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h5 class="mb-1">Weekly Overview</h5>
+            <p class="small-muted mb-0">Tap a day card on mobile or view the full table on desktop. Use <span class="badge badge-accent">Shuffle Recipes</span> to randomize breakfast/lunch/dinner across the week.</p>
+          </div>
+          <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <span class="small-muted">PAN40 Taper (doctor approval):</span>
+            <div class="fw-bold">Week 1 → Week 4 step-down</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mobile Cards -->
+    <section id="mobileView" class="mb-3">
+      <div id="cardsContainer" class="d-flex flex-column"></div>
+    </section>
+
+    <!-- Desktop Table -->
+    <section class="table-responsive shadow-sm rounded">
+      <table id="planTable" class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Breakfast</th>
+            <th>Lunch</th>
+            <th>Dinner</th>
+            <th>Recipe Notes</th>
+            <th>Spice Mix</th>
+            <th>Probiotic</th>
+            <th>Gas Tips</th>
+            <th>PPI Taper</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Expanded Info -->
+    <section class="mt-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card p-3">
+            <h6>Anti-Inflammatory Spice Mixes</h6>
+            <ul id="spiceList" class="mb-0 small"></ul>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card p-3">
+            <h6>Probiotic Plan</h6>
+            <ul id="probioticList" class="mb-0 small"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-3 mt-3">
+        <h6>PPI (PAN40) Taper Plan</h6>
+        <div id="ppiPlan" class="small"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="text-center small text-muted py-4">
+    Created for you • Adjustments welcome
+  </footer>
+
+  <script>
+    // ====== Data Array (weekData) ======
+    const weekData = [
+      {day:'Mon', breakfast:'Oats upma', lunch:'Moong dal + Palak sabzi', dinner:'Moong dal khichdi', recipesIncluded:'Oats upma: oats + carrot + beans. Khichdi: moong dal + rice + turmeric.', spiceMix:'Mix A', probiotic:'2 tbsp homemade curd', gasTips:'Avoid raw onions; use ajwain water', ppiTaper:'Week 1: PAN40 daily'},
+      {day:'Tue', breakfast:'Ragi porridge + almonds', lunch:'Tur dal + Cabbage sabzi', dinner:'Roti + Capsicum sabzi', recipesIncluded:'Ragi porridge: ragi + water + gud.', spiceMix:'Mix B', probiotic:'1 glass buttermilk', gasTips:'Use lauki instead of gas veg', ppiTaper:'Week 1: PAN40 daily'},
+      {day:'Wed', breakfast:'Bansi rawa upma', lunch:'Moong dal + Beans', dinner:'Oats khichdi', recipesIncluded:'Veg upma + light spices', spiceMix:'Mix A', probiotic:'1 tbsp curd after lunch', gasTips:'Avoid cauliflower/cabbage today', ppiTaper:'Week 1: PAN40 daily'},
+      {day:'Thu', breakfast:'Idli + sambar', lunch:'Chana dal + Cauliflower curry', dinner:'Turai sabzi + roti', recipesIncluded:'Idli rawa idli', spiceMix:'Mix C', probiotic:'2 tbsp curd', gasTips:'Avoid rajma/chole today', ppiTaper:'Week 2: PAN40 1 day ON, 1 day OFF'},
+      {day:'Fri', breakfast:'Oats porridge', lunch:'Tur dal + Lauki sabzi', dinner:'Light khichdi', recipesIncluded:'Oats + water + little gud', spiceMix:'Mix A', probiotic:'Buttermilk ½ glass', gasTips:'Choose low-FODMAP veg', ppiTaper:'Week 2: 1 day ON, 1 day OFF'},
+      {day:'Sat', breakfast:'Dosa + chutney', lunch:'Moong dal + Brinjal curry', dinner:'Ragi malt or roti + Gawar phalli', recipesIncluded:'Rawa dosa', spiceMix:'Mix B', probiotic:'2 tbsp curd', gasTips:'No onions at night', ppiTaper:'Week 3: PAN40 every 3rd day'},
+      {day:'Sun', breakfast:'Oats upma', lunch:'Rajma OR Chole (small)', dinner:'Oats porridge / Khichdi', recipesIncluded:'Rajma/Chole—weak masala, add ajwain', spiceMix:'Mix C', probiotic:'Buttermilk ½ glass', gasTips:'Gas veg allowed in small qty', ppiTaper:'Week 4: PAN20 daily'},
+    ];
+
+    const spiceMixes = {
+      'Mix A': 'Haldi + Saunf + Jeera — add 1/2 tsp to dal or sabzi daily',
+      'Mix B': 'Haldi + Dhaniya powder + Ajwain — good for digestion and inflammation',
+      'Mix C': 'Haldi + Rai + Saunf — use in tempering for khichdi/upma'
+    };
+
+    const probioticPlan = [
+      'Homemade curd — 2 tbsp daily after lunch',
+      'Buttermilk — 1/2 glass (not cold) on alternate days',
+      'Idli/Dosa (fermented batter) — twice a week breakfast',
+      'Steamed vegetables + jeera-saunf water to aid motility'
+    ];
+
+    const ppiPlanHTML = `
+      <ol>
+        <li>Week 1: Continue PAN40 daily.</li>
+        <li>Week 2: PAN40 alternate days (1 day ON, 1 day OFF).</li>
+        <li>Week 3: PAN40 every 3rd day.</li>
+        <li>Week 4: Switch to PAN20 daily.</li>
+        <li>Week 5: PAN20 alternate days.</li>
+        <li>Week 6: Consider stopping PPI or switching to H2 blocker (doctor approval required).</li>
+      </ol>
+      <p class="small-muted">Note: Follow only with your doctor's approval. Use jeera-saunf water, avoid late-night meals, and reduce spicy/maida foods during taper.</p>
+    `;
+
+    // ====== Render Functions ======
+    function renderTable(data){
+      const tbody = document.querySelector('#planTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(row =>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${row.day}</strong></td>
+          <td>${row.breakfast}</td>
+          <td>${row.lunch}</td>
+          <td>${row.dinner}</td>
+          <td>${row.recipesIncluded}</td>
+          <td>${row.spiceMix}</td>
+          <td>${row.probiotic}</td>
+          <td>${row.gasTips}</td>
+          <td>${row.ppiTaper}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderMobileCards(data){
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = '';
+      data.forEach(row =>{
+        const div = document.createElement('div');
+        div.className = 'card p-3 mb-2 card-day day-card card-compact';
+        div.innerHTML = `
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="mb-1">${row.day}</h6>
+              <div class="small-muted">${row.recipesIncluded}</div>
+            </div>
+            <div class="text-end">
+              <span class="badge badge-accent">${row.spiceMix}</span>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-12 mb-2"><strong>Breakfast:</strong> ${row.breakfast}</div>
+            <div class="col-12 mb-2"><strong>Lunch:</strong> ${row.lunch}</div>
+            <div class="col-12 mb-2"><strong>Dinner:</strong> ${row.dinner}</div>
+            <div class="col-12 small-muted"><strong>Probiotic:</strong> ${row.probiotic} &nbsp; • &nbsp; <strong>Gas tip:</strong> ${row.gasTips}</div>
+            <div class="col-12 mt-2"><small class="small-muted">PPI: ${row.ppiTaper}</small></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // ====== Shuffle Functionality ======
+    function shuffleRecipes(){
+      // We'll shuffle breakfasts/lunches/dinners among days to keep other metadata intact
+      const breakfasts = weekData.map(d=>d.breakfast);
+      const lunches = weekData.map(d=>d.lunch);
+      const dinners = weekData.map(d=>d.dinner);
+      shuffleArray(breakfasts);
+      shuffleArray(lunches);
+      shuffleArray(dinners);
+      const newData = weekData.map((d,i)=>({ ...d, breakfast:breakfasts[i], lunch:lunches[i], dinner:dinners[i] }));
+      renderTable(newData);
+      renderMobileCards(newData);
+      // keep in-memory modified data
+      window._shuffled = newData;
+    }
+
+    function resetData(){
+      renderTable(weekData);
+      renderMobileCards(weekData);
+      window._shuffled = null;
+    }
+
+    function shuffleArray(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]] = [arr[j],arr[i]];
+      }
+    }
+
+    // ====== Initial Render ======
+    document.addEventListener('DOMContentLoaded',()=>{
+      renderTable(weekData);
+      renderMobileCards(weekData);
+      // spice list
+      const spiceList = document.getElementById('spiceList');
+      spiceList.innerHTML = Object.keys(spiceMixes).map(k=>`<li><strong>${k}:</strong> ${spiceMixes[k]}</li>`).join('');
+      // probiotic list
+      document.getElementById('probioticList').innerHTML = probioticPlan.map(i=>`<li>${i}</li>`).join('');
+      // ppi plan
+      document.getElementById('ppiPlan').innerHTML = ppiPlanHTML;
+
+      document.getElementById('shuffleBtn').addEventListener('click',()=>{
+        shuffleRecipes();
+      });
+      document.getElementById('resetBtn').addEventListener('click',()=>{
+        resetData();
+      });
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
