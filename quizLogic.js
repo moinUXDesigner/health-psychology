@@ -19,7 +19,7 @@ import {
     quizQuestions11,
     quizQuestions12,
     quizQuestions13
-} from "./weeklyQuiz.js";
+} from "weeklyQuiz.js";
 
 import { 
     quizQuestions14, 
@@ -35,7 +35,7 @@ import {
     quizQuestions24,
     quizQuestions25,
     quizQuestions26
-} from "./subjectWiseQuiz.js";
+} from "subjectWiseQuiz.js";
 
 /* -------------------------
    EXPOSE to window (keeps backward compatibility)
@@ -844,3 +844,4 @@ darkModeToggle.addEventListener("change", () => {
 totalPages = 1;
 updatePageIndicators();
 updateProgressUI();
+
